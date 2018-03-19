@@ -8,6 +8,25 @@ function hittest(a, b) {
     ((a.y + a.h) > b.y));
 }
 
+export function initEnemyBullet (k) {
+    var check = false;
+    while (!check){
+        var enemy = Math.floor(Math.random() * vars.enemies.length);
+        if (vars.enemies[enemy].visible){
+            vars.enemiesBullet[k] = {visible : true, image : vars.bulletImage, x : vars.enemies[enemy].x + 30,
+                                y : vars.enemies[enemy].y + 25, w : 16, h : 16}
+            check = true;
+        }
+    }
+}
+
+export function initEnemiesBullet() {
+  var k = 0;
+  while (k < vars.enemy_bullets) {
+    initEnemyBullet(k++);
+  }
+}
+
 export function initEnemies() {
   var k = 0;
   for(var i = 0; i < 4; i++)
@@ -48,6 +67,25 @@ export function drawBullet() {
   }
 }
 
+export function drawEnemyBullet() {
+  for (var i = 0; i < vars.enemiesBullet.length; i++){
+    vars.context.drawImage(vars.enemiesBullet[i].image, vars.enemiesBullet[i].x, vars.enemiesBullet[i].y);
+
+    vars.enemiesBullet[i].y += vars.enemy_bullet_speed;
+
+    if (vars.enemiesBullet[i].y > vars.canvas.height){
+      initEnemyBullet(i);
+    }
+    if (hittest(vars.enemiesBullet[i], vars.hero)){
+      initEnemyBullet(i);
+      vars.life--;
+    }
+    if (vars.life === 0){
+      vars.gameOver = 1;
+    }
+  }
+}
+
 export function render() {
   vars.context.drawImage(vars.bgImage, 0, 0);
   if(vars.gameOver === 0) {
@@ -56,12 +94,13 @@ export function render() {
       if(vars.enemies[i].visible)
         vars.context.drawImage(vars.enemies[i].image, vars.enemies[i].x, vars.enemies[i].y);
     drawBullet();
+    moveEnemies();
+    drawEnemyBullet();
   }
 }
 
 export function main() {
   keysUpdate();
-  moveEnemies();
   render();
   requestAnimationFrame(main);
 }
